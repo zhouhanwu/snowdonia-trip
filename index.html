@@ -1,0 +1,1987 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+  :root {
+    --paper: #f2ede0;
+    --paper-dark: #e8e1d1;
+    --paper-warm: #faf4e8;
+    --ink: #1e2520;
+    --ink-soft: #3a4239;
+    --slate: #2a2f2c;
+    --moss: #5a6b4f;
+    --moss-light: #8ea080;
+    --ochre: #b87a2f;
+    --ochre-bright: #d4913a;
+    --stone: #9c9488;
+    --stone-light: #c4bcaf;
+    --rust: #a04a2e;
+    --sky: #6b8296;
+    --border: rgba(30, 37, 32, 0.12);
+    --border-strong: rgba(30, 37, 32, 0.24);
+
+    --day1-accent: #6b8296;
+    --day2-accent: #c89557;
+    --day3-accent: #7d9268;
+    --day4-accent: #a04a2e;
+
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Newsreader', Georgia, serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 60px; }
+
+  body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--paper);
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(184, 122, 47, 0.04), transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(90, 107, 79, 0.05), transparent 50%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Subtle paper grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.14 0 0 0 0 0.12 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .app { position: relative; z-index: 2; }
+
+  /* === STICKY NAV === */
+  .jump-nav {
+    position: sticky; top: 0;
+    z-index: 40;
+    background: rgba(242, 237, 224, 0.92);
+    backdrop-filter: saturate(1.4) blur(12px);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .jump-nav::-webkit-scrollbar { display: none; }
+  .jump-nav a {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+  }
+  .jump-nav a:hover { background: var(--paper-dark); color: var(--ink); }
+
+  /* === HERO === */
+  .hero {
+    padding: 56px 24px 40px;
+    max-width: 880px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--ochre);
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-variation-settings: 'opsz' 144, 'SOFT' 80;
+    font-size: clamp(52px, 10vw, 108px);
+    line-height: 0.92;
+    letter-spacing: -0.025em;
+    color: var(--slate);
+    margin-bottom: 24px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    font-variation-settings: 'opsz' 144, 'SOFT' 100;
+    color: var(--ochre);
+  }
+  .hero-dates {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .hero-meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .hero-dividers {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .stat-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 72;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--slate);
+    line-height: 1.1;
+  }
+
+  /* === SECTION === */
+  section {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .section-head {
+    padding: 48px 0 28px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .section-head.no-rule { border-top: none; padding-top: 24px; }
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 12px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-variation-settings: 'opsz' 96, 'SOFT' 60;
+    font-size: clamp(32px, 5vw, 44px);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    color: var(--slate);
+    margin-bottom: 10px;
+  }
+  .section-head .intro {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 640px;
+  }
+
+  /* === ALERTS === */
+  .alerts {
+    display: grid;
+    gap: 8px;
+    padding: 20px;
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--ochre);
+    border-radius: 2px;
+    margin-top: 16px;
+  }
+  .alerts h3 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ochre);
+    margin-bottom: 4px;
+  }
+  .alerts ul { list-style: none; }
+  .alerts li {
+    position: relative;
+    padding-left: 20px;
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .alerts li::before {
+    content: '';
+    position: absolute;
+    left: 4px; top: 10px;
+    width: 6px; height: 6px;
+    background: var(--ochre);
+    border-radius: 50%;
+  }
+
+  /* === MAP === */
+  .map-wrap {
+    margin-top: 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--paper-warm);
+    position: relative;
+  }
+  #leaflet-map {
+    width: 100%;
+    height: 560px;
+    background: #dbe3dd;
+  }
+  .map-fallback {
+    display: none;
+    padding: 28px 22px;
+    background: rgba(160, 74, 46, 0.06);
+    border-left: 3px solid var(--rust);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .map-fallback strong {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rust);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .map-fallback code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--paper-dark);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  .map-wrap.tiles-blocked #leaflet-map { display: none; }
+  .map-wrap.tiles-blocked .map-fallback { display: block; }
+
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--paper);
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-soft);
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+  }
+  .legend-line {
+    display: inline-block;
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .legend-line.dashed {
+    height: 0;
+    border-top: 2.5px dashed currentColor;
+    background: transparent;
+  }
+
+  /* Custom Leaflet marker styling */
+  .custom-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #faf4e8;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 12px;
+    border: 2.5px solid #faf4e8;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    width: 30px !important;
+    height: 30px !important;
+    margin-left: -15px !important;
+    margin-top: -15px !important;
+  }
+
+  /* Leaflet popup styling to match editorial feel */
+  .leaflet-popup-content-wrapper {
+    background: var(--paper-warm) !important;
+    border-radius: 2px !important;
+    box-shadow: 0 6px 20px rgba(30, 37, 32, 0.18) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .leaflet-popup-content {
+    margin: 12px 16px !important;
+    font-family: var(--font-body) !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    color: var(--ink) !important;
+  }
+  .leaflet-popup-content strong {
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: var(--slate);
+    display: block;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+  .leaflet-popup-content em {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ochre);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .leaflet-popup-content a.popup-jump {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ochre);
+    padding-bottom: 1px;
+  }
+  .leaflet-popup-content a.popup-jump:hover {
+    color: var(--rust);
+    border-color: var(--rust);
+  }
+  .leaflet-popup-tip {
+    background: var(--paper-warm) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .leaflet-container {
+    font-family: var(--font-body);
+  }
+  .leaflet-control-attribution {
+    background: rgba(250, 244, 232, 0.85) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+  }
+  .leaflet-control-layers {
+    background: var(--paper-warm) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 2px !important;
+    font-family: var(--font-body) !important;
+    font-size: 13px !important;
+  }
+  .leaflet-control-layers-toggle {
+    background-color: var(--paper-warm) !important;
+  }
+  .leaflet-bar a {
+    background: var(--paper-warm) !important;
+    color: var(--slate) !important;
+    border-color: var(--border) !important;
+  }
+  .leaflet-bar a:hover {
+    background: var(--paper-dark) !important;
+  }
+
+  /* === DAYS === */
+  .day {
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .day-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: start;
+    margin-bottom: 36px;
+  }
+  .day-numeral {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 144, 'SOFT' 100;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 96px;
+    line-height: 0.85;
+    color: var(--day-accent, var(--ochre));
+    letter-spacing: -0.04em;
+  }
+  .day-title-block { padding-top: 6px; }
+  .day-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 10px;
+  }
+  .day-header h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-variation-settings: 'opsz' 96;
+    font-size: clamp(26px, 4vw, 36px);
+    line-height: 1.05;
+    color: var(--slate);
+    letter-spacing: -0.015em;
+    margin-bottom: 10px;
+  }
+  .day-summary {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 560px;
+  }
+
+  .day-alert {
+    background: rgba(160, 74, 46, 0.06);
+    border-left: 3px solid var(--rust);
+    padding: 12px 16px;
+    margin-bottom: 28px;
+    border-radius: 2px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .day-alert strong {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rust);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* === TIMELINE === */
+  .timeline {
+    list-style: none;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 27px; top: 10px; bottom: 10px;
+    width: 1px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--border-strong) 0 3px,
+      transparent 3px 7px
+    );
+    z-index: 0;
+  }
+
+  .event, .leg {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .event-time, .leg-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-align: right;
+    padding-right: 8px;
+    padding-top: 14px;
+    line-height: 1.3;
+  }
+  .event-time .duration {
+    display: block;
+    color: var(--stone);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .event-marker, .leg-marker {
+    position: absolute;
+    left: 20px;
+    top: 16px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--day-accent, var(--ochre));
+    z-index: 2;
+  }
+  .leg-marker {
+    background: var(--day-accent, var(--ochre));
+    border-color: var(--paper);
+    box-shadow: 0 0 0 2px var(--day-accent, var(--ochre));
+  }
+
+  .event-body, .leg-body {
+    padding: 10px 0;
+    position: relative;
+  }
+
+  .event-body {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  /* Checkboxes */
+  .tick {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--stone);
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    margin-top: 3px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+  .tick:hover { border-color: var(--day-accent, var(--ochre)); }
+  .tick:checked {
+    background: var(--day-accent, var(--ochre));
+    border-color: var(--day-accent, var(--ochre));
+  }
+  .tick:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 1px;
+    width: 6px; height: 11px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .event-content h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-variation-settings: 'opsz' 32;
+    font-size: 17px;
+    color: var(--slate);
+    line-height: 1.25;
+    margin-bottom: 3px;
+    letter-spacing: -0.005em;
+  }
+  .event-content p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .event:has(.tick:checked) .event-content h3 { opacity: 0.5; text-decoration: line-through; text-decoration-color: var(--stone); }
+  .event:has(.tick:checked) .event-content p { opacity: 0.5; }
+
+  .event-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    background: var(--paper-dark);
+    border-radius: 2px;
+    color: var(--ink-soft);
+  }
+  .tag.price { background: rgba(184, 122, 47, 0.12); color: var(--ochre); }
+  .tag.warn { background: rgba(160, 74, 46, 0.12); color: var(--rust); }
+
+  /* Transport leg styling */
+  .leg .leg-body {
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--day-accent, var(--ochre));
+    border-radius: 2px;
+    padding: 10px 14px;
+    margin: 4px 0;
+  }
+  .leg-body h4 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--day-accent, var(--ochre));
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .leg-body h4 .leg-icon {
+    font-size: 14px;
+  }
+  .leg-body .route {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--slate);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .leg-body .leg-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  /* === CHECKLIST SECTION === */
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+  }
+  .checklist-card {
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 20px 22px;
+  }
+  .checklist-card h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-variation-settings: 'opsz' 32;
+    font-size: 18px;
+    color: var(--slate);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px dotted var(--border-strong);
+  }
+  .checklist-card ul {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .checklist-card li {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 10px;
+    align-items: start;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+  .checklist-card li:has(.tick:checked) { opacity: 0.5; text-decoration: line-through; }
+
+  /* === BUDGET === */
+  .budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: var(--font-body);
+  }
+  .budget-table th, .budget-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .budget-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--stone);
+  }
+  .budget-table td { font-size: 15px; color: var(--ink); }
+  .budget-table td:last-child {
+    font-family: var(--font-mono);
+    text-align: right;
+    color: var(--ink-soft);
+  }
+  .budget-table tr.total td {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--slate);
+    padding-top: 14px;
+    border-top: 2px solid var(--border-strong);
+    border-bottom: none;
+  }
+  .budget-table tr.total td:last-child {
+    font-family: var(--font-mono);
+    color: var(--ochre);
+  }
+
+  /* === LINKS === */
+  .links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2px;
+    margin-top: 20px;
+    background: var(--border);
+  }
+  .link-card {
+    background: var(--paper-warm);
+    padding: 16px 18px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.15s ease;
+  }
+  .link-card:hover { background: var(--paper-dark); }
+  .link-card .link-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 4px;
+  }
+  .link-card .link-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--slate);
+    line-height: 1.25;
+  }
+  .link-card .link-url {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--stone);
+    margin-top: 4px;
+  }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--stone);
+    font-size: 14px;
+  }
+  footer::before {
+    content: '✦';
+    display: block;
+    font-size: 18px;
+    color: var(--ochre);
+    margin-bottom: 16px;
+    letter-spacing: 0.5em;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 640px) {
+    .hero { padding: 40px 20px 32px; }
+    section { padding: 0 20px; }
+    .hero-dividers { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .day-header { grid-template-columns: auto 1fr; gap: 16px; }
+    .day-numeral { font-size: 68px; }
+    .event, .leg { grid-template-columns: 52px 1fr; gap: 12px; }
+    .timeline::before { left: 23px; }
+    .event-marker, .leg-marker { left: 16px; }
+    .event-time, .leg-time { font-size: 10px; }
+    #map { height: 340px; }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* Load-in animation */
+  .hero > *, .section-head, .day-header, .alerts {
+    animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero > *:nth-child(1) { animation-delay: 0.02s; }
+  .hero > *:nth-child(2) { animation-delay: 0.08s; }
+  .hero > *:nth-child(3) { animation-delay: 0.14s; }
+  .hero > *:nth-child(4) { animation-delay: 0.20s; }
+  .hero > *:nth-child(5) { animation-delay: 0.26s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="app">
+
+  <nav class="jump-nav">
+    <a href="#overview">Overview</a>
+    <a href="#map-section">Map</a>
+    <a href="#day1">Fri · Travel</a>
+    <a href="#day2">Sat · Summit</a>
+    <a href="#day3">Sun · Cwm Idwal</a>
+    <a href="#day4">Mon · Coast & Home</a>
+    <a href="#prep">Before you go</a>
+    <a href="#packing">Kit</a>
+    <a href="#budget">Budget</a>
+    <a href="#deploy">Viewing map</a>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-eyebrow">Field Itinerary № 001</div>
+    <h1>Snowdonia<br>by <em>rail</em></h1>
+    <p class="hero-dates">Fri 24 — Mon 27 April 2026</p>
+    <p class="hero-meta">Four days · Three friends · Zero cars</p>
+    <div class="hero-dividers">
+      <div class="stat-block">
+        <span class="stat-label">Summit</span>
+        <span class="stat-value">Yr Wyddfa</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">Elevation</span>
+        <span class="stat-value">1 085 m</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">Bases</span>
+        <span class="stat-value">2</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">Budget</span>
+        <span class="stat-value">~£300 pp</span>
+      </div>
+    </div>
+  </header>
+
+  <section id="overview">
+    <div class="section-head no-rule">
+      <div class="section-eyebrow">Read this first</div>
+      <h2>Before we begin</h2>
+    </div>
+    <div class="alerts">
+      <h3>Three things worth flagging</h3>
+      <ul>
+        <li><strong>No train from Llanberis.</strong> The village has no mainline station — the only train home leaves from Bangor. Day 4 is routed via Bangor 18:11 Avanti, Euston 21:35.</li>
+        <li><strong>Mountain weather is real in April.</strong> Snow and ice on the summit ridge is common. Check the Met Office Mountain Forecast (mwis.org.uk) on Friday night and have a lower-level Plan B ready.</li>
+        <li><strong>Bus times need verifying.</strong> The Sherpa'r Wyddfa network runs well but timings shift by season. Check <span style="font-family: var(--font-mono); font-size: 13px;">traws.cymru</span> the week before and screenshot the timetables — signal is patchy in the park.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="map-section">
+    <div class="section-head">
+      <div class="section-eyebrow">Geography</div>
+      <h2>Where you're going</h2>
+      <p class="intro">A proper topographic map with the hiking routes marked. Tap a pin to jump to that day, or drag and zoom to explore the terrain. Toggle layers in the top-right to switch between terrain and standard views.</p>
+    </div>
+    <div class="map-wrap" id="map-container">
+      <div id="leaflet-map"></div>
+      <div class="map-fallback">
+        <strong>Map tiles didn't load</strong>
+        The topographic map tiles need an internet connection and may be blocked by the current viewer. If you're seeing this inside the Claude preview, that's expected — the sandbox blocks external tile servers. To see the full map: <strong style="display:inline; letter-spacing:0; text-transform:none; font-family:var(--font-body); color:var(--ink);">download this HTML file</strong> and open it in a browser, or deploy it (see the note at the bottom of this page). All the other content on this page works fine without the map.
+      </div>
+      <div class="map-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#6b8296"></span>Day 1 · Travel</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#c89557"></span>Day 2 · Snowdon</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#7d9268"></span>Day 3 · Cwm Idwal</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#a04a2e"></span>Day 4 · Coast & Home</span>
+        <span class="legend-item" style="margin-left:auto;"><span class="legend-line" style="background:#c89557"></span>Pyg Track (ascent)</span>
+        <span class="legend-item"><span class="legend-line dashed" style="color:#c89557"></span>Miners' Track (descent)</span>
+        <span class="legend-item"><span class="legend-line" style="background:#7d9268"></span>Cwm Idwal loop</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== DAY 1 ========== -->
+  <section id="day1" class="day" style="--day-accent: var(--day1-accent);">
+    <div class="day-header">
+      <div class="day-numeral">I</div>
+      <div class="day-title-block">
+        <div class="day-eyebrow">Friday 24 April · Travel</div>
+        <h2>London to the foot of the mountain</h2>
+        <p class="day-summary">Afternoon train to Bangor, Sherpa bus through the pass, a slow wander around Llanberis, then a final short hop up to Pen-y-Pass before dark.</p>
+      </div>
+    </div>
+
+    <ol class="timeline">
+      <li class="event">
+        <div class="event-time">10:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-1">
+          <div class="event-content">
+            <h3>Arrive London Euston</h3>
+            <p>Be at the platforms 10–15 min before departure. Grab breakfast and water for the train.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">11:10<span class="duration">3h 23m</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚆</span> Avanti West Coast · Direct</h4>
+          <p class="route">London Euston → Bangor (Gwynedd)</p>
+          <p class="leg-meta">Arrive 14:33 · ~£40–70 advance single · Trainsplit for possible savings</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">14:35</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-2">
+          <div class="event-content">
+            <h3>Bangor Station</h3>
+            <p>Sherpa T2 bus stop is right outside the station. Confirm next departure on the TfW screen.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">14:50<span class="duration">~45 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚌</span> Sherpa'r Wyddfa · T2</h4>
+          <p class="route">Bangor → Caernarfon → Llanberis</p>
+          <p class="leg-meta">£3 single · cash or contactless · check exact time before travel</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">15:35</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-3">
+          <div class="event-content">
+            <h3>Arrive Llanberis · dump bags</h3>
+            <p>Small village at the foot of Snowdon. Spar for supplies for tomorrow. If the YHA at Pen-y-Pass can't store bags early, the Electric Mountain café will hold them for an hour or two.</p>
+            <div class="event-tags">
+              <span class="tag">afternoon</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">16:00<span class="duration">~90 min</span></div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-4">
+          <div class="event-content">
+            <h3>National Slate Museum</h3>
+            <p>Free entry. Actually genuinely good — old quarry workshops, the largest working waterwheel in mainland Britain, slate-splitting demos. UNESCO context for the whole landscape around you.</p>
+            <div class="event-tags">
+              <span class="tag price">free</span>
+              <span class="tag">UNESCO</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">17:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-5">
+          <div class="event-content">
+            <h3>Llyn Padarn lakeside · golden hour</h3>
+            <p>Flat 15-min walk along the lake with Snowdon massif behind you. The iconic lone tree (Tree on a Lake) sits here — even if it's full of Instagram people, the light this time of evening is worth it.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">18:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-6">
+          <div class="event-content">
+            <h3>Early dinner · Pete's Eats or The Heights</h3>
+            <p>Pete's Eats: the legendary climbers' café, cheap hearty plates, pint-mugs of tea. The Heights: proper pub with rooms. Either works. Eat early — bus up to Pen-y-Pass is last service.</p>
+            <div class="event-tags">
+              <span class="tag price">£</span>
+              <span class="tag">hiker food</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">19:30<span class="duration">~20 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚌</span> Sherpa'r Wyddfa · S1 · Last bus up</h4>
+          <p class="route">Llanberis → Nant Peris → Pen-y-Pass</p>
+          <p class="leg-meta">£3 · VERIFY exact last bus time on day · fallback = taxi from Llanberis (~£20)</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">19:50</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-7">
+          <div class="event-content">
+            <h3>Check in · YHA Snowdon Pen-y-Pass</h3>
+            <p>Stone-built hostel at 360 m, right at the trailhead. You'll walk out of the front door onto the Pyg Track tomorrow morning. Café/bar on site for a nightcap. Lights out early.</p>
+            <div class="event-tags">
+              <span class="tag">Night 1 of 3</span>
+              <span class="tag price">~£35 pp</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">21:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-1-8">
+          <div class="event-content">
+            <h3>Kit prepped · alarms set · sleep</h3>
+            <p>Lay out tomorrow's clothes. Fill water bottles. Charge headtorches. Set three alarms (two humans will snooze through one). Sunrise is 05:55 and you want to be moving by 05:00.</p>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ========== DAY 2 ========== -->
+  <section id="day2" class="day" style="--day-accent: var(--day2-accent);">
+    <div class="day-header">
+      <div class="day-numeral">II</div>
+      <div class="day-title-block">
+        <div class="day-eyebrow">Saturday 25 April · Summit</div>
+        <h2>Sunrise up, lakes down</h2>
+        <p class="day-summary">Pyg Track in the pre-dawn dark, summit for the low-angle light, down past Glaslyn and across the Llyn Llydaw causeway. Afternoon bus to Betws-y-Coed and celebratory pub supper.</p>
+      </div>
+    </div>
+
+    <div class="day-alert">
+      <strong>⚠ Weather-dependent</strong>
+      Check the <em>Met Office Mountain Forecast</em> (mwis.org.uk) on Friday night. If the summit is in cloud with high winds, swap to the Llanberis Path (less exposed, walkable from the village). If it's proper snow/ice on the Pyg zigzags and you don't have microspikes, bail — Cwm Idwal is a stunning Plan B.
+    </div>
+
+    <ol class="timeline">
+      <li class="event">
+        <div class="event-time">04:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-1">
+          <div class="event-content">
+            <h3>Wake up · porridge · check conditions</h3>
+            <p>YHA kitchen will be quiet at this hour. Quick breakfast, one last look at the forecast, fill hot drinks in flasks. Don't overload the stomach.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">05:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-2">
+          <div class="event-content">
+            <h3>Start the Pyg Track · headtorches on</h3>
+            <p>Path climbs stone steps immediately, heading SW along the ridge above Llyn Llydaw. Headtorch for the first ~40 min before daylight fills in.</p>
+            <div class="event-tags">
+              <span class="tag warn">pre-dawn</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">05:55</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-3">
+          <div class="event-content">
+            <h3>Sunrise · Bwlch y Moch viewpoint</h3>
+            <p>The Pyg opens out at Bwlch y Moch ("pass of the pigs") about 50 min in — first big view down into the Llyn Llydaw cwm. Sun comes up over the Glyderau to the east. This is the money shot.</p>
+            <div class="event-tags">
+              <span class="tag">🌅 sunrise</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">06:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-4">
+          <div class="event-content">
+            <h3>Climb the Pyg zigzags</h3>
+            <p>The Pyg and Miners' merge at the base of the zigzags — rocky, steeper, hands-on in places. This is where ice lingers latest in spring. Steady pace, spread out if it's busy.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">07:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-5">
+          <div class="event-content">
+            <h3>Summit · Yr Wyddfa · 1 085 m</h3>
+            <p>Touch the trig point. Photos. Hafod Eryri café may be open (check — April opening varies). The wind at the summit is always bigger than you expect; hood up and find shelter on the lee side to eat.</p>
+            <div class="event-tags">
+              <span class="tag">🏔 highest point in Wales</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">08:15</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-6">
+          <div class="event-content">
+            <h3>Descend to the Miners' junction</h3>
+            <p>Back down the zigzags to where the paths split. Take the Miners' Track — signed, heads east/NE down towards Glaslyn.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">09:15</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-7">
+          <div class="event-content">
+            <h3>Glaslyn · the deep blue lake</h3>
+            <p>Trapped in a corrie directly under the summit cliffs. Water is eerily blue-green from dissolved copper. Good spot for a proper sit-down break.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">10:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-8">
+          <div class="event-content">
+            <h3>Llyn Llydaw causeway</h3>
+            <p>The stone causeway across the lake is the iconic Miners' Track image. In low light and still water it's mirror-smooth. From here the path is gently graded all the way back to Pen-y-Pass.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">11:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-9">
+          <div class="event-content">
+            <h3>Back at Pen-y-Pass · collect bags</h3>
+            <p>Rough total: 6 hrs, ~11 km, ~720 m ascent. Collect rucksacks from YHA. Warden centre has toilets and a water refill point.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">12:30<span class="duration">~35 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚌</span> Sherpa'r Wyddfa · eastbound · via Capel Curig</h4>
+          <p class="route">Pen-y-Pass → Betws-y-Coed</p>
+          <p class="leg-meta">£3 · confirm service/number at the Warden Centre — routing changes seasonally</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">13:15</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-10">
+          <div class="event-content">
+            <h3>Arrive Betws-y-Coed · check in</h3>
+            <p>Pretty stone village where three rivers meet. Check in at your booking (Vagabond Bunkhouse, a Capel Curig B&B, or an Airbnb in Betws). Hot shower. Legs up.</p>
+            <div class="event-tags">
+              <span class="tag">Nights 2 & 3</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">14:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-11">
+          <div class="event-content">
+            <h3>Celebration pub lunch</h3>
+            <p>Stables Bar at the Royal Oak, or Y Stablau — both do proper post-hike plates. Pint. You've just climbed Wales.</p>
+            <div class="event-tags">
+              <span class="tag price">££</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">19:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-2-12">
+          <div class="event-content">
+            <h3>Dinner · Olif tapas or Hangin' Pizzeria</h3>
+            <p>Betws has more variety than you'd expect. Olif is small-plates Spanish-Welsh fusion, Hangin' is wood-fired pizza. Book ahead if you can — Saturday nights fill up.</p>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ========== DAY 3 ========== -->
+  <section id="day3" class="day" style="--day-accent: var(--day3-accent);">
+    <div class="day-header">
+      <div class="day-numeral">III</div>
+      <div class="day-title-block">
+        <div class="day-eyebrow">Sunday 26 April · Recovery walk</div>
+        <h2>Cwm Idwal · Darwin's glacial lab</h2>
+        <p class="day-summary">A slow morning, gentle 2-hr loop around a perfect glacial lake in the Glyderau, then Betws-y-Coed all afternoon — forest walks, cafés, and time to properly wind down.</p>
+      </div>
+    </div>
+
+    <ol class="timeline">
+      <li class="event">
+        <div class="event-time">09:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-3-1">
+          <div class="event-content">
+            <h3>Slow breakfast · Alpine Coffee Shop</h3>
+            <p>Betws's best coffee, good pastries, mountain-people vibe. Eat slowly. Your legs have earned it.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">10:15<span class="duration">~25 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚌</span> Sherpa'r Wyddfa · westbound</h4>
+          <p class="route">Betws-y-Coed → Capel Curig → Ogwen Cottage</p>
+          <p class="leg-meta">£3 · ask driver for "Ogwen" — it's a specific bus stop</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">10:45<span class="duration">~2 hrs</span></div>
+        <div class="leg-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-3-2">
+          <div class="event-content">
+            <h3>Cwm Idwal loop · 3.5 km</h3>
+            <p>A perfect glacial amphitheatre. Path circles the lake with the Idwal Slabs rising on the left and Tryfan's silhouette behind you. Darwin came here in 1831 and realised the valley was carved by ice — there's a plaque. Optional extension up to the "Devil's Kitchen" cleft for the more energetic.</p>
+            <div class="event-tags">
+              <span class="tag">easy</span>
+              <span class="tag">Nat. Nature Reserve</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">13:15<span class="duration">~25 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚌</span> Sherpa'r Wyddfa · eastbound</h4>
+          <p class="route">Ogwen Cottage → Betws-y-Coed</p>
+          <p class="leg-meta">£3 · return service — check times on the way out</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">14:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-3-3">
+          <div class="event-content">
+            <h3>Late lunch in Betws</h3>
+            <p>Something quick — the Bistro Betws-y-Coed, or grab filled rolls from Cotswold Outdoor's deli. Save appetite for a proper dinner.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">15:00<span class="duration">flexible</span></div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-3-4">
+          <div class="event-content">
+            <h3>Afternoon options in Betws</h3>
+            <p>Pick based on energy. <strong>Low effort:</strong> Fairy Glen (short wooded gorge, £1, 45 min). <strong>Medium:</strong> Swallow Falls via the Afon Llugwy river path (£2 entry, 4 km return). <strong>Bigger:</strong> Llyn Elsi forest loop (2 hrs, steep-ish up through trees to a reservoir with views back to Betws).</p>
+            <div class="event-tags">
+              <span class="tag">choose your own</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">18:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-3-5">
+          <div class="event-content">
+            <h3>Drink · Stables Bar</h3>
+            <p>Welsh ales, pub dogs, quiet Sunday evening vibe. Or the Ty Gwyn Inn (17th c. coaching inn, atmospheric) if that's more your speed.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">20:00</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-3-6">
+          <div class="event-content">
+            <h3>Dinner · pack for tomorrow</h3>
+            <p>Early night — Monday is a travel + sightseeing day and you'll want to be out by 08:30. Pack and put bags by the door.</p>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ========== DAY 4 ========== -->
+  <section id="day4" class="day" style="--day-accent: var(--day4-accent);">
+    <div class="day-header">
+      <div class="day-numeral">IV</div>
+      <div class="day-title-block">
+        <div class="day-eyebrow">Monday 27 April · Coast & home</div>
+        <h2>Castles, coast, the long train home</h2>
+        <p class="day-summary">Conwy Valley line down to the coast, a castle morning, an afternoon in Bangor, then the Avanti direct from Bangor — arriving Euston in time for a late supper.</p>
+      </div>
+    </div>
+
+    <div class="day-alert">
+      <strong>⚠ About Llanberis</strong>
+      Llanberis has no mainline station, so the train home must depart from Bangor. I've routed the day Conwy → Bangor → train. If you wanted Llanberis for the Snowdon Mountain Railway or something else specific, let me know and I'll rework.
+    </div>
+
+    <ol class="timeline">
+      <li class="event">
+        <div class="event-time">08:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-4-1">
+          <div class="event-content">
+            <h3>Check out · walk to Betws station</h3>
+            <p>Station is a 5-min walk from most of the village. Grab a coffee and a pastry for the train.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">09:10<span class="duration">~35 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚆</span> Transport for Wales · Conwy Valley Line</h4>
+          <p class="route">Betws-y-Coed → Llandudno Junction</p>
+          <p class="leg-meta">Verify exact times (Sunday & Monday services differ) · ~£7 single</p>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">09:55<span class="duration">~3 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚆</span> Change at Llandudno Junction</h4>
+          <p class="route">→ Conwy (one stop)</p>
+          <p class="leg-meta">Or walk over the estuary bridge in 20 min · saves nothing really</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">10:15<span class="duration">~2 hrs</span></div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-4-2">
+          <div class="event-content">
+            <h3>Conwy · castle & walls</h3>
+            <p>UNESCO World Heritage. Castle itself (£13, ~90 min) has spiral staircases up every tower. Town walls are free and give great rooftop-level views of the harbour. Look for the Smallest House in Great Britain (6ft wide) on the quay.</p>
+            <div class="event-tags">
+              <span class="tag price">£13 castle</span>
+              <span class="tag">UNESCO</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">12:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-4-3">
+          <div class="event-content">
+            <h3>Lunch · Edwards of Conwy</h3>
+            <p>Award-winning butcher/bakery on the High St. Dragon scotch eggs, Welsh oggies, cracking sausage rolls. Takeaway onto the quay for a sit-down if the weather's kind.</p>
+            <div class="event-tags">
+              <span class="tag">Mon open</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">14:00<span class="duration">~20 min</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚆</span> Transport for Wales · coast line</h4>
+          <p class="route">Conwy → Bangor (direct)</p>
+          <p class="leg-meta">Frequent service · ~£8 · check platform changes at the Junction</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">14:30<span class="duration">~3 hrs</span></div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-4-4">
+          <div class="event-content">
+            <h3>Bangor afternoon</h3>
+            <p>Pick one: <strong>Penrhyn Castle</strong> (National Trust, ~30 min walk or quick bus from town — huge neo-Norman pile, genuinely impressive, allow 2 hrs). Or <strong>Bangor Pier</strong> (Victorian, second-longest in Wales) + <strong>Bangor Cathedral</strong> + coffee in the university quarter. Castle wins if anyone's a history person.</p>
+            <div class="event-tags">
+              <span class="tag price">Penrhyn £14 NT</span>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">17:30</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-4-5">
+          <div class="event-content">
+            <h3>Back to Bangor Station</h3>
+            <p>Allow time for a quick dinner or supplies for the train — the station café is fine but not great. Holyhead Road has better options 5 min walk away.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="leg">
+        <div class="leg-time">18:11<span class="duration">3h 23m</span></div>
+        <div class="leg-marker"></div>
+        <div class="leg-body">
+          <h4><span class="leg-icon">🚆</span> Avanti West Coast · Direct home</h4>
+          <p class="route">Bangor → London Euston</p>
+          <p class="leg-meta">Arrive 21:34 · book advance for best fares · seat reservations worth it</p>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="event-time">21:35</div>
+        <div class="event-marker"></div>
+        <div class="event-body">
+          <input type="checkbox" class="tick" id="e-4-6">
+          <div class="event-content">
+            <h3>Arrive London Euston · home</h3>
+            <p>Tube home. Sleep for a week.</p>
+            <div class="event-tags">
+              <span class="tag">✦ fin</span>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ========== BEFORE YOU GO ========== -->
+  <section id="prep">
+    <div class="section-head">
+      <div class="section-eyebrow">Logistics</div>
+      <h2>Book & do this week</h2>
+      <p class="intro">In rough order of how fast things sell out. The train and Saturday accommodation are the only two that genuinely bite if you leave them late.</p>
+    </div>
+
+    <div class="checklist-grid">
+      <div class="checklist-card">
+        <h3>Bookings</h3>
+        <ul>
+          <li><input type="checkbox" class="tick" id="p-1">Avanti return Euston ↔ Bangor (Trainsplit worth trying)</li>
+          <li><input type="checkbox" class="tick" id="p-2">YHA Snowdon Pen-y-Pass · Fri 24 April · private room</li>
+          <li><input type="checkbox" class="tick" id="p-3">Betws-y-Coed accom · Sat 25 & Sun 26 · 2 nights</li>
+          <li><input type="checkbox" class="tick" id="p-4">Conwy Castle online (small discount over gate price)</li>
+        </ul>
+      </div>
+
+      <div class="checklist-card">
+        <h3>Downloads</h3>
+        <ul>
+          <li><input type="checkbox" class="tick" id="p-5">OS Maps offline — Snowdon + Cwm Idwal</li>
+          <li><input type="checkbox" class="tick" id="p-6">Sherpa'r Wyddfa timetable PDF</li>
+          <li><input type="checkbox" class="tick" id="p-7">Screenshot train tickets (phone signal is patchy)</li>
+          <li><input type="checkbox" class="tick" id="p-8">Save YHA booking confirmation offline</li>
+        </ul>
+      </div>
+
+      <div class="checklist-card">
+        <h3>Check on the day</h3>
+        <ul>
+          <li><input type="checkbox" class="tick" id="p-9">Met Office Mountain Forecast (mwis.org.uk) Fri night</li>
+          <li><input type="checkbox" class="tick" id="p-10">Hafod Eryri summit café opening status</li>
+          <li><input type="checkbox" class="tick" id="p-11">Pen-y-Pass last S1 bus time Friday</li>
+          <li><input type="checkbox" class="tick" id="p-12">Sunday Conwy Valley train times (differ from Mon)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PACKING ========== -->
+  <section id="packing">
+    <div class="section-head">
+      <div class="section-eyebrow">Kit</div>
+      <h2>What to bring</h2>
+      <p class="intro">The non-obvious stuff first. April in Snowdonia is genuinely winter-like on the summit ridge — pack for cold and wet even if the valley forecast looks mild.</p>
+    </div>
+
+    <div class="checklist-grid">
+      <div class="checklist-card">
+        <h3>On the mountain</h3>
+        <ul>
+          <li><input type="checkbox" class="tick" id="k-1">Waterproof jacket (proper shell, not showerproof)</li>
+          <li><input type="checkbox" class="tick" id="k-2">Waterproof overtrousers</li>
+          <li><input type="checkbox" class="tick" id="k-3">Warm mid-layer (fleece or light down)</li>
+          <li><input type="checkbox" class="tick" id="k-4">Hat + gloves (yes, in April)</li>
+          <li><input type="checkbox" class="tick" id="k-5">Hiking boots (worn in, waterproof)</li>
+          <li><input type="checkbox" class="tick" id="k-6">2 L water + bladder/bottles</li>
+          <li><input type="checkbox" class="tick" id="k-7">Real food: sandwiches, flapjacks, chocolate</li>
+          <li><input type="checkbox" class="tick" id="k-8">Headtorch + spare batteries (pre-dawn start)</li>
+          <li><input type="checkbox" class="tick" id="k-9">Power bank</li>
+          <li><input type="checkbox" class="tick" id="k-10">Suncream + sunglasses (snow glare is real)</li>
+          <li><input type="checkbox" class="tick" id="k-11">Blister plasters + basic first aid</li>
+          <li><input type="checkbox" class="tick" id="k-12">Microspikes (~£20, split 3 ways, for icy zigzags)</li>
+        </ul>
+      </div>
+
+      <div class="checklist-card">
+        <h3>General travel</h3>
+        <ul>
+          <li><input type="checkbox" class="tick" id="k-13">2 changes of clothes</li>
+          <li><input type="checkbox" class="tick" id="k-14">Base layers / pyjamas for hostel</li>
+          <li><input type="checkbox" class="tick" id="k-15">Quick-dry towel (YHA often charges)</li>
+          <li><input type="checkbox" class="tick" id="k-16">Wash kit (small)</li>
+          <li><input type="checkbox" class="tick" id="k-17">Earplugs (hostel dorm / snoring friends)</li>
+          <li><input type="checkbox" class="tick" id="k-18">Charger + multi-USB plug</li>
+          <li><input type="checkbox" class="tick" id="k-19">Phone in dry bag / waterproof pouch</li>
+          <li><input type="checkbox" class="tick" id="k-20">Card + small cash (bus drivers sometimes cash-only)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== BUDGET ========== -->
+  <section id="budget">
+    <div class="section-head">
+      <div class="section-eyebrow">Finances</div>
+      <h2>Per person, rough</h2>
+      <p class="intro">Assumes three of you splitting accommodation costs where possible and eating one pub meal + one cheaper meal per day.</p>
+    </div>
+
+    <table class="budget-table">
+      <thead>
+        <tr><th>Item</th><th>Estimate</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Train · Euston ↔ Bangor return (Avanti advance)</td><td>£90–140</td></tr>
+        <tr><td>Sherpa'r Wyddfa buses · ~5 single journeys</td><td>£12–18</td></tr>
+        <tr><td>Conwy Valley line (Betws → Junction)</td><td>£7</td></tr>
+        <tr><td>YHA Pen-y-Pass · 1 night private room</td><td>£30–45</td></tr>
+        <tr><td>Betws-y-Coed · 2 nights (bunkhouse/Airbnb split 3 ways)</td><td>£70–110</td></tr>
+        <tr><td>Food · 4 days modest</td><td>£70–90</td></tr>
+        <tr><td>Conwy Castle</td><td>£13</td></tr>
+        <tr><td>Penrhyn Castle (optional)</td><td>£14</td></tr>
+        <tr><td>Fairy Glen / Swallow Falls entry</td><td>£3</td></tr>
+        <tr class="total"><td>Total per person</td><td>~£310–440</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== DEPLOY ========== -->
+  <section id="deploy">
+    <div class="section-head">
+      <div class="section-eyebrow">Technical note</div>
+      <h2>Viewing the map</h2>
+      <p class="intro">The topographic map uses real OpenTopoMap tiles with contour lines, actual trail markings, and true-to-scale positioning of every waypoint and hiking route. The trade-off is that the map tiles need to load from a server on the internet, which some embedded previews block.</p>
+    </div>
+
+    <div class="checklist-grid">
+      <div class="checklist-card">
+        <h3>Option 1 · Open locally</h3>
+        <ul style="display: block;">
+          <li style="display: block; padding-left: 0;">
+            Download this HTML file to your computer, then double-click it to open in Chrome, Safari, Firefox, or Edge. All the tiles and interactivity will work with no setup.
+          </li>
+          <li style="display: block; padding-left: 0; margin-top: 10px;">
+            <strong style="font-family: var(--font-display); font-weight: 500;">Caveat:</strong> on mobile you'll need to transfer the file to your phone first (AirDrop, iCloud Drive, Google Drive, email to yourself).
+          </li>
+        </ul>
+      </div>
+
+      <div class="checklist-card">
+        <h3>Option 2 · GitHub Pages (free, permanent URL)</h3>
+        <ul style="display: block;">
+          <li style="display: block; padding-left: 0;">1. Create a free GitHub account if you don't have one.</li>
+          <li style="display: block; padding-left: 0;">2. New repository → name it <code style="font-family: var(--font-mono); font-size: 12px; background: var(--paper-dark); padding: 1px 5px;">snowdonia-trip</code> or similar → public.</li>
+          <li style="display: block; padding-left: 0;">3. Upload this file, renamed to <code style="font-family: var(--font-mono); font-size: 12px; background: var(--paper-dark); padding: 1px 5px;">index.html</code>.</li>
+          <li style="display: block; padding-left: 0;">4. Repo Settings → Pages → Source: "Deploy from branch" · main · /root · Save.</li>
+          <li style="display: block; padding-left: 0;">5. After ~1 minute you'll have a URL like <code style="font-family: var(--font-mono); font-size: 12px; background: var(--paper-dark); padding: 1px 5px;">yourname.github.io/snowdonia-trip</code>. Bookmark on phone.</li>
+        </ul>
+      </div>
+
+      <div class="checklist-card">
+        <h3>Option 3 · Netlify Drop (easiest)</h3>
+        <ul style="display: block;">
+          <li style="display: block; padding-left: 0;">1. Go to <code style="font-family: var(--font-mono); font-size: 12px; background: var(--paper-dark); padding: 1px 5px;">app.netlify.com/drop</code>.</li>
+          <li style="display: block; padding-left: 0;">2. Drag this HTML file onto the dropzone.</li>
+          <li style="display: block; padding-left: 0;">3. Done — you get a live URL in about 10 seconds. No account needed for a temporary URL; sign up (free) to keep it permanent.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== LINKS ========== -->
+  <section id="links-section">
+    <div class="section-head">
+      <div class="section-eyebrow">Further reading</div>
+      <h2>Useful links</h2>
+    </div>
+
+    <div class="links">
+      <a class="link-card" href="https://www.mwis.org.uk/forecasts/english/snowdonia" target="_blank" rel="noopener">
+        <div class="link-label">Forecast</div>
+        <div class="link-title">Met Office Mountain Forecast</div>
+        <div class="link-url">mwis.org.uk</div>
+      </a>
+      <a class="link-card" href="https://traws.cymru/en/north-west-wales/snowdon-sherpa" target="_blank" rel="noopener">
+        <div class="link-label">Buses</div>
+        <div class="link-title">Sherpa'r Wyddfa timetables</div>
+        <div class="link-url">traws.cymru</div>
+      </a>
+      <a class="link-card" href="https://www.nationalrail.co.uk" target="_blank" rel="noopener">
+        <div class="link-label">Trains</div>
+        <div class="link-title">National Rail</div>
+        <div class="link-url">nationalrail.co.uk</div>
+      </a>
+      <a class="link-card" href="https://www.yha.org.uk/hostel/yha-snowdon-pen-y-pass" target="_blank" rel="noopener">
+        <div class="link-label">Hostel</div>
+        <div class="link-title">YHA Snowdon Pen-y-Pass</div>
+        <div class="link-url">yha.org.uk</div>
+      </a>
+      <a class="link-card" href="https://cadw.gov.wales/visit/places-to-visit/castell-conwy" target="_blank" rel="noopener">
+        <div class="link-label">Tickets</div>
+        <div class="link-title">Conwy Castle · Cadw</div>
+        <div class="link-url">cadw.gov.wales</div>
+      </a>
+      <a class="link-card" href="https://www.snowdonrailway.co.uk" target="_blank" rel="noopener">
+        <div class="link-label">Backup plan</div>
+        <div class="link-title">Snowdon Mountain Railway</div>
+        <div class="link-url">snowdonrailway.co.uk</div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    Built in good faith · verify bus times, train times, opening hours before you leave · diolch yn fawr
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function() {
+  const dayColors = {
+    1: '#6b8296',
+    2: '#c89557',
+    3: '#7d9268',
+    4: '#a04a2e'
+  };
+
+  // === Numbered waypoints ===
+  // Real geographic coordinates
+  const waypoints = [
+    { day: 1, n: 1, lat: 53.2230, lng: -4.1357, name: 'Bangor Station',
+      note: 'Day 1 · Arrive from London Euston', section: 'day1' },
+    { day: 1, n: 2, lat: 53.1207, lng: -4.1275, name: 'Llanberis',
+      note: 'Day 1 · Slate Museum, Llyn Padarn, early dinner', section: 'day1' },
+    { day: 1, n: 3, lat: 53.0802, lng: -4.0763, name: 'YHA Pen-y-Pass',
+      note: 'Night 1 · Hostel at the trailhead (360 m)', section: 'day1' },
+    { day: 2, n: 4, lat: 53.0685, lng: -4.0764, name: 'Yr Wyddfa · summit',
+      note: 'Day 2 · Highest point in Wales (1 085 m)', section: 'day2' },
+    { day: 2, n: 5, lat: 53.0772, lng: -4.0528, name: 'Llyn Llydaw',
+      note: 'Day 2 · Causeway crossing on the Miners\' Track', section: 'day2' },
+    { day: 2, n: 6, lat: 53.0931, lng: -3.8017, name: 'Betws-y-Coed',
+      note: 'Nights 2 & 3 · Stone village base', section: 'day2' },
+    { day: 3, n: 7, lat: 53.1179, lng: -4.0326, name: 'Ogwen Cottage · Cwm Idwal',
+      note: 'Day 3 · Glacial lake loop (3.5 km, easy)', section: 'day3' },
+    { day: 4, n: 8, lat: 53.2800, lng: -3.8256, name: 'Conwy Castle',
+      note: 'Day 4 · UNESCO · medieval town walls', section: 'day4' },
+    { day: 4, n: 9, lat: 53.2231, lng: -4.1359, name: 'Bangor · train home',
+      note: 'Day 4 · 18:11 Avanti direct to Euston', section: 'day4' }
+  ];
+
+  // === Hiking route coordinates ===
+  // Pyg Track: Pen-y-Pass → Bwlch y Moch → zigzags → summit
+  const pygTrack = [
+    [53.0802, -4.0763], // Pen-y-Pass
+    [53.0790, -4.0757], // Initial stone steps
+    [53.0782, -4.0735], // Climbing
+    [53.0773, -4.0710], // Contouring
+    [53.0758, -4.0682], // Bwlch y Moch
+    [53.0738, -4.0690], // Along ridge above cwm
+    [53.0720, -4.0715], // Descending slightly
+    [53.0708, -4.0738], // Approach to junction
+    [53.0703, -4.0748], // Junction with Miners
+    [53.0696, -4.0756], // Bottom of zigzags
+    [53.0691, -4.0761], // Top of zigzags / Bwlch Glas
+    [53.0685, -4.0764]  // Summit
+  ];
+
+  // Miners' Track: Pen-y-Pass → lakes → join Pyg at zigzags
+  const minersTrack = [
+    [53.0802, -4.0763], // Pen-y-Pass
+    [53.0800, -4.0738], // Start south-east
+    [53.0801, -4.0688], // Past Llyn Teyrn
+    [53.0798, -4.0645], // Continuing
+    [53.0790, -4.0600], // Approaching Llyn Llydaw
+    [53.0779, -4.0555], // Causeway north end
+    [53.0772, -4.0528], // Causeway (midway)
+    [53.0762, -4.0550], // Causeway south end
+    [53.0748, -4.0605], // South shore of Llyn Llydaw
+    [53.0732, -4.0660], // Past Glaslyn
+    [53.0722, -4.0695], // Steep scree climb
+    [53.0713, -4.0725], // Joining Pyg
+    [53.0703, -4.0748]  // Junction
+  ];
+
+  // Cwm Idwal loop - clockwise from Ogwen Cottage
+  const cwmIdwalLoop = [
+    [53.1179, -4.0326], // Ogwen Cottage
+    [53.1165, -4.0308], // Path south along stream
+    [53.1148, -4.0293], // NE corner of Llyn Idwal
+    [53.1125, -4.0280], // East shore (below Idwal Slabs)
+    [53.1100, -4.0285], // Approaching south end
+    [53.1090, -4.0302], // South end (Devil's Kitchen base)
+    [53.1098, -4.0322], // Start of west shore
+    [53.1120, -4.0335], // West shore
+    [53.1148, -4.0335], // NW corner
+    [53.1168, -4.0330], // Back towards Ogwen
+    [53.1179, -4.0326]  // Close loop
+  ];
+
+  // === Initialise map ===
+  const map = L.map('leaflet-map', {
+    center: [53.10, -4.00],
+    zoom: 11,
+    scrollWheelZoom: false, // avoid hijacking scroll; user clicks to activate
+    zoomControl: true
+  });
+
+  // Track tile load failures to show fallback if all tiles fail
+  let tilesLoaded = false;
+  let tilesFailed = 0;
+  const container = document.getElementById('map-container');
+
+  // OpenTopoMap - the ideal base for hiking (contours, trails, peaks)
+  const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map: © <a href="https://opentopomap.org">OpenTopoMap</a> · Data: © <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',
+    maxZoom: 17,
+    subdomains: 'abc'
+  });
+
+  // OSM fallback - clearer roads, less terrain detail
+  const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  });
+
+  // Satellite (Esri - works without key for non-commercial)
+  const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Imagery © <a href="https://www.esri.com">Esri</a>',
+    maxZoom: 18
+  });
+
+  topoLayer.addTo(map);
+  topoLayer.on('tileload', () => { tilesLoaded = true; });
+  topoLayer.on('tileerror', () => {
+    tilesFailed++;
+    // If 6+ tiles fail and none have loaded after 4s, show fallback
+    setTimeout(() => {
+      if (!tilesLoaded && tilesFailed >= 6) {
+        container.classList.add('tiles-blocked');
+      }
+    }, 4000);
+  });
+
+  // === Hiking route overlays ===
+  const pygLine = L.polyline(pygTrack, {
+    color: '#c89557',
+    weight: 4,
+    opacity: 0.95,
+    lineCap: 'round',
+    lineJoin: 'round'
+  }).bindPopup('<strong>Pyg Track</strong><em>Day 2 · ascent</em>~3.5 km · 720 m gain · hands-on zigzags near top').addTo(map);
+
+  const minersLine = L.polyline(minersTrack, {
+    color: '#c89557',
+    weight: 4,
+    opacity: 0.95,
+    dashArray: '10 6',
+    lineCap: 'round',
+    lineJoin: 'round'
+  }).bindPopup('<strong>Miners\' Track</strong><em>Day 2 · descent</em>~4 km · past Glaslyn & the Llyn Llydaw causeway').addTo(map);
+
+  const idwalLine = L.polyline(cwmIdwalLoop, {
+    color: '#7d9268',
+    weight: 4,
+    opacity: 0.95,
+    lineCap: 'round',
+    lineJoin: 'round'
+  }).bindPopup('<strong>Cwm Idwal loop</strong><em>Day 3 · recovery walk</em>~3.5 km · gentle glacial lake circuit').addTo(map);
+
+  // === Waypoint markers ===
+  waypoints.forEach(p => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="custom-pin" style="background:${dayColors[p.day]};">${p.n}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+
+    const marker = L.marker([p.lat, p.lng], { icon, zIndexOffset: 1000 }).addTo(map);
+    const popupHtml = `<strong>${p.name}</strong><em>Stop ${p.n}</em>${p.note}<br><a class="popup-jump" href="#${p.section}">Go to day →</a>`;
+    marker.bindPopup(popupHtml);
+
+    // Click on popup link closes popup and scrolls
+    marker.on('popupopen', () => {
+      const link = document.querySelector('.leaflet-popup-content a.popup-jump');
+      if (link) {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          marker.closePopup();
+          const target = document.getElementById(p.section);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, { once: true });
+      }
+    });
+  });
+
+  // === Layer control ===
+  L.control.layers(
+    {
+      'Topographic (for hiking)': topoLayer,
+      'Standard map': osmLayer,
+      'Satellite': satLayer
+    },
+    {
+      'Pyg Track': pygLine,
+      'Miners\' Track': minersLine,
+      'Cwm Idwal loop': idwalLine
+    },
+    { position: 'topright', collapsed: false }
+  ).addTo(map);
+
+  // === Fit to bounds covering everything ===
+  const allPoints = [
+    ...waypoints.map(p => [p.lat, p.lng]),
+    ...pygTrack,
+    ...minersTrack,
+    ...cwmIdwalLoop
+  ];
+  map.fitBounds(allPoints, { padding: [30, 30] });
+
+  // Click-to-activate scroll zoom (prevents accidental scroll hijack)
+  map.on('click', () => map.scrollWheelZoom.enable());
+  map.on('mouseout', () => map.scrollWheelZoom.disable());
+
+  // Scale control
+  L.control.scale({ position: 'bottomleft', imperial: false, metric: true }).addTo(map);
+
+  // === CHECKBOX PERSISTENCE ===
+  const STORAGE_KEY = 'snowdonia-itinerary-checks-v1';
+
+  async function loadChecks() {
+    try {
+      if (!window.storage) return loadFromLocal();
+      const result = await window.storage.get(STORAGE_KEY);
+      return result ? JSON.parse(result.value) : {};
+    } catch (err) {
+      return loadFromLocal();
+    }
+  }
+
+  function loadFromLocal() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+
+  async function saveChecks(state) {
+    try {
+      if (window.storage) {
+        await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+    } catch (err) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    }
+  }
+
+  async function initChecks() {
+    const state = await loadChecks();
+    const checks = document.querySelectorAll('.tick');
+    checks.forEach(cb => {
+      if (state[cb.id]) cb.checked = true;
+      cb.addEventListener('change', async () => {
+        const current = await loadChecks();
+        current[cb.id] = cb.checked;
+        await saveChecks(current);
+      });
+    });
+  }
+
+  initChecks();
+})();
+</script>
